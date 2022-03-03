@@ -55,16 +55,17 @@ namespace avt_vimba_camera
 enum FrameStartTriggerMode
 {
   Invalid,
-  Freerun,
-  FixedRate,
-  Software,
-  SyncIn0,
-  SyncIn1,
-  SyncIn2,
-  SyncIn3,
-  SyncIn4,
-  Action0,
-  Action1
+  Freerun, FixedRate, Software,
+  Line0, Line1, Line2, Line3, Line4,
+  Action0, Action1
+};
+
+static const FrameStartTriggerMode AllTriggerModes[] =
+{
+  Invalid,
+  Freerun, FixedRate, Software,
+  Line0, Line1, Line2, Line3, Line4,
+  Action0, Action1
 };
 
 enum CameraState

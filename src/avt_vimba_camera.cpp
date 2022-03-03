@@ -41,8 +41,9 @@
 namespace avt_vimba_camera
 {
 static const char* AutoMode[] = { "Off", "Once", "Continuous" };
-static const char* TriggerMode[] = { "Invalid", "Freerun", "FixedRate", "Software", "Line0",  "Line1",
-                                     "Line2",   "Line3",   "Line4",     "Action0",  "Action1" };
+static const char* TriggerMode[] = {"Invalid", "Freerun", "FixedRate", "Software",
+                                    "Line0", "Line1", "Line2", "Line3", "Line4",
+                                    "Action0",  "Action1"};
 static const char* AcquisitionMode[] = { "Continuous", "SingleFrame", "MultiFrame", "Recorder" };
 static const char* PixelFormatMode[] = { "Mono8",           "Mono10",          "Mono10Packed",    "Mono12",
                                          "Mono12Packed",    "BayerGR8",        "BayerRG8",        "BayerGB8",
@@ -154,13 +155,12 @@ void AvtVimbaCamera::start(const std::string& ip_str, const std::string& guid_st
   getFeatureValue("TriggerSource", trigger_source);
   int trigger_source_int = getTriggerModeInt(trigger_source);
 
-  if (trigger_source_int == Freerun || trigger_source_int == FixedRate || trigger_source_int == SyncIn1 ||
-      trigger_source_int == Action0 || trigger_source_int == Action1 || trigger_source_int == Software)
+  // TODO -- Which trigger source is actually not implemented?
+  if (trigger_source_int != Invalid)
   {
     // Create a frame observer for this camera
-    SP_SET(frame_obs_ptr_,
-           new FrameObserver(vimba_camera_ptr_,
-                             std::bind(&avt_vimba_camera::AvtVimbaCamera::frameCallback, this, std::placeholders::_1)));
+    SP_SET(frame_obs_ptr_, new FrameObserver(vimba_camera_ptr_,
+          std::bind(&avt_vimba_camera::AvtVimbaCamera::frameCallback, this, std::placeholders::_1)));
     camera_state_ = IDLE;
   }
   else
@@ -661,45 +661,13 @@ bool AvtVimbaCamera::runCommand(const std::string& command_str)
 int AvtVimbaCamera::getTriggerModeInt(const std::string& mode_str)
 {
   int mode = Invalid;
-  if (mode_str == TriggerMode[Freerun])
+  for (const auto m : AllTriggerModes)
   {
-    mode = Freerun;
-  }
-  else if (mode_str == TriggerMode[FixedRate])
-  {
-    mode = FixedRate;
-  }
-  else if (mode_str == TriggerMode[Software])
-  {
-    mode = Software;
-  }
-  else if (mode_str == TriggerMode[SyncIn0])
-  {
-    mode = SyncIn0;
-  }
-  else if (mode_str == TriggerMode[SyncIn1])
-  {
-    mode = SyncIn1;
-  }
-  else if (mode_str == TriggerMode[SyncIn2])
-  {
-    mode = SyncIn2;
-  }
-  else if (mode_str == TriggerMode[SyncIn3])
-  {
-    mode = SyncIn3;
-  }
-  else if (mode_str == TriggerMode[SyncIn4])
-  {
-    mode = SyncIn4;
-  }
-  else if (mode_str == TriggerMode[Action0])
-  {
-    mode = Action0;
-  }
-  else if (mode_str == TriggerMode[Action1])
-  {
-    mode = Action1;
+    if (mode_str == TriggerMode[m])
+    {
+      mode = m;
+      break; // Short circuit
+    }
   }
   return mode;
 }
