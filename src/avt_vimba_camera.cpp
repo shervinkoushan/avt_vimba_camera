@@ -332,7 +332,7 @@ double AvtVimbaCamera::getTimestamp()
 double AvtVimbaCamera::getDeviceTemp()
 {
   double temp = -1.0;
-  if (setFeatureValue("DeviceTemperatureSelector", "Main") == VmbErrorSuccess)
+  if (setFeatureValue("DeviceTemperatureSelector", "Mainboard") == VmbErrorSuccess)
   {
     getFeatureValue("DeviceTemperature", temp);
   }
@@ -864,7 +864,7 @@ void AvtVimbaCamera::updateAcquisitionConfig(Config& config)
   }
   if (config.acquisition_rate != config_.acquisition_rate || on_init_)
   {
-    configureFeature("AcquisitionFrameRateAbs", static_cast<float>(config.acquisition_rate), config.acquisition_rate);
+    configureFeature("AcquisitionFrameRate", static_cast<float>(config.acquisition_rate), config.acquisition_rate);
   }
   if (config.trigger_mode != config_.trigger_mode || on_init_)
   {
@@ -884,7 +884,7 @@ void AvtVimbaCamera::updateAcquisitionConfig(Config& config)
   }
   if (config.trigger_delay != config_.trigger_delay || on_init_)
   {
-    configureFeature("TriggerDelayAbs", static_cast<float>(config.trigger_delay), config.trigger_delay);
+    configureFeature("TriggerDelay", static_cast<float>(config.trigger_delay), config.trigger_delay);
   }
   if (config.action_device_key != config_.action_device_key || on_init_)
   {
@@ -938,7 +938,7 @@ void AvtVimbaCamera::updateExposureConfig(Config& config)
 
   if (config.exposure != config_.exposure || on_init_)
   {
-    configureFeature("ExposureTimeAbs", static_cast<float>(config.exposure), config.exposure);
+    configureFeature("ExposureTime", static_cast<float>(config.exposure), config.exposure);
   }
   if (config.exposure_auto != config_.exposure_auto || on_init_)
   {
@@ -1030,7 +1030,7 @@ void AvtVimbaCamera::updateWhiteBalanceConfig(Config& config)
 
   if (config.balance_ratio_abs != config_.balance_ratio_abs || on_init_)
   {
-    configureFeature("BalanceRatioAbs", static_cast<float>(config.balance_ratio_abs), config.balance_ratio_abs);
+    configureFeature("BalanceRatio", static_cast<float>(config.balance_ratio_abs), config.balance_ratio_abs);
   }
   if (config.balance_ratio_selector != config_.balance_ratio_selector || on_init_)
   {
@@ -1042,7 +1042,7 @@ void AvtVimbaCamera::updateWhiteBalanceConfig(Config& config)
   }
   if (config.whitebalance_auto_tol != config_.whitebalance_auto_tol || on_init_)
   {
-    configureFeature("BalanceWhiteAutoAdjustTol", static_cast<VmbInt64_t>(config.whitebalance_auto_tol),
+    configureFeature("BalanceWhiteAutoTolerance", static_cast<VmbInt64_t>(config.whitebalance_auto_tol),
                      config.whitebalance_auto_tol);
   }
   if (config.whitebalance_auto_rate != config_.whitebalance_auto_rate || on_init_)
