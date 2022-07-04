@@ -140,7 +140,7 @@ void AvtVimbaCamera::start(const std::string& ip_str, const std::string& guid_st
   }
   updater_.update();
 
-  getFeatureValue("GevTimestampTickFrequency", vimba_timestamp_tick_freq_);
+  getFeatureValue("TimestampLatchValue", vimba_timestamp_tick_freq_);
 
   // From the SynchronousGrab API example:
   // TODO Set the GeV packet size to the highest possible value
@@ -319,12 +319,11 @@ void AvtVimbaCamera::frameCallback(const FramePtr vimba_frame_ptr)
 double AvtVimbaCamera::getTimestamp()
 {
   double timestamp = -1.0;
-  if (runCommand("GevTimestampControlLatch"))
+  if (runCommand("TimestampLatch"))
   {
-    VmbInt64_t freq, ticks;
-    getFeatureValue("GevTimestampTickFrequency", freq);
-    getFeatureValue("GevTimestampValue", ticks);
-    timestamp = static_cast<double>(ticks) / static_cast<double>(freq);
+    VmbInt64_t value;
+    getFeatureValue("TimestampLatchValue", value);
+    timestamp = static_cast<int>(value);
   }
   return timestamp;
 }
@@ -367,7 +366,7 @@ int AvtVimbaCamera::getSensorHeight()
 
 double AvtVimbaCamera::getTimestampRealTime(VmbUint64_t timestamp_ticks)
 {
-  return (static_cast<double>(timestamp_ticks)) / (static_cast<double>(vimba_timestamp_tick_freq_));
+  return (static_cast<int>(vimba_timestamp_tick_freq_));
 }
 
 // Template function to SET a feature value from the camera
@@ -862,6 +861,10 @@ void AvtVimbaCamera::updateAcquisitionConfig(Config& config)
   {
     configureFeature("AcquisitionMode", config.acquisition_mode, config.acquisition_mode);
   }
+  if (config.AcquisitionFrameRateEnable != config_.AcquisitionFrameRateEnable || on_init_)
+  {
+    configureFeature("AcquisitionFrameRateEnable", static_cast<bool>(config.AcquisitionFrameRateEnable), config.AcquisitionFrameRateEnable);
+  }
   if (config.acquisition_rate != config_.acquisition_rate || on_init_)
   {
     configureFeature("AcquisitionFrameRate", static_cast<float>(config.acquisition_rate), config.acquisition_rate);
@@ -886,7 +889,7 @@ void AvtVimbaCamera::updateAcquisitionConfig(Config& config)
   {
     configureFeature("TriggerDelay", static_cast<float>(config.trigger_delay), config.trigger_delay);
   }
-  if (config.action_device_key != config_.action_device_key || on_init_)
+  /*if (config.action_device_key != config_.action_device_key || on_init_)
   {
     configureFeature("ActionDeviceKey", static_cast<VmbInt64_t>(config.action_device_key), config.action_device_key);
   }
@@ -897,7 +900,7 @@ void AvtVimbaCamera::updateAcquisitionConfig(Config& config)
   if (config.action_group_mask != config_.action_group_mask || on_init_)
   {
     configureFeature("ActionGroupMask", static_cast<VmbInt64_t>(config.action_group_mask), config.action_group_mask);
-  }
+  }*/
 }
 
 /* Update the Iris config */
@@ -908,7 +911,7 @@ void AvtVimbaCamera::updateIrisConfig(Config& config)
     ROS_INFO("Updating Iris config:");
   }
 
-  if (config.iris_auto_target != config_.iris_auto_target || on_init_)
+  /*if (config.iris_auto_target != config_.iris_auto_target || on_init_)
   {
     configureFeature("IrisAutoTarget", static_cast<VmbInt64_t>(config.iris_auto_target), config.iris_auto_target);
   }
@@ -925,7 +928,7 @@ void AvtVimbaCamera::updateIrisConfig(Config& config)
   {
     configureFeature("IrisVideoLevelMin", static_cast<VmbInt64_t>(config.iris_video_level_min),
                      config.iris_video_level_min);
-  }
+  }*/
 }
 
 /** Change the Exposure configuration */
@@ -944,23 +947,55 @@ void AvtVimbaCamera::updateExposureConfig(Config& config)
   {
     configureFeature("ExposureAuto", config.exposure_auto, config.exposure_auto);
   }
-  if (config.exposure_auto_alg != config_.exposure_auto_alg || on_init_)
+  if (config.ExposureActiveMode != config_.ExposureActiveMode || on_init_)
   {
+    configureFeature("ExposureActiveMode", config.ExposureActiveMode, config.ExposureActiveMode);
+  }
+  if (config.ExposureMode != config_.ExposureMode || on_init_)
+  {
+    configureFeature("ExposureMode", config.ExposureMode, config.ExposureMode);
+  }
+  /*
     configureFeature("ExposureAutoAlg", config.exposure_auto_alg, config.exposure_auto_alg);
   }
   if (config.exposure_auto_tol != config_.exposure_auto_tol || on_init_)
   {
     configureFeature("ExposureAutoAdjustTol", static_cast<VmbInt64_t>(config.exposure_auto_tol),
                      config.exposure_auto_tol);
-  }
+  }*/
   if (config.exposure_auto_max != config_.exposure_auto_max || on_init_)
   {
-    configureFeature("ExposureAutoMax", static_cast<VmbInt64_t>(config.exposure_auto_max), config.exposure_auto_max);
+    configureFeature("ExposureAutoMax", static_cast<float>(config.exposure_auto_max), config.exposure_auto_max);
   }
   if (config.exposure_auto_min != config_.exposure_auto_min || on_init_)
   {
-    configureFeature("ExposureAutoMin", static_cast<VmbInt64_t>(config.exposure_auto_min), config.exposure_auto_min);
+    configureFeature("ExposureAutoMin", static_cast<float>(config.exposure_auto_min), config.exposure_auto_min);
   }
+  if (config.Intensity_Target != config_.Intensity_Target || on_init_)
+  {
+    configureFeature("IntensityControllerTarget", static_cast<float>(config.Intensity_Target), config.Intensity_Target);
+  }
+  if (config.AutoModeRegionWidth != config_.AutoModeRegionWidth || on_init_)
+  {
+    configureFeature("AutoModeRegionWidth", config.AutoModeRegionWidth, config.AutoModeRegionWidth);
+  }
+  if (config.AutoModeRegionHeight != config_.AutoModeRegionHeight || on_init_)
+  {
+    configureFeature("AutoModeRegionHeight", config.AutoModeRegionHeight, config.AutoModeRegionHeight);
+  }
+  if (config.AutoModeRegionOffsetX != config_.AutoModeRegionOffsetX || on_init_)
+  {
+    configureFeature("AutoModeRegionOffsetX", config.AutoModeRegionOffsetX, config.AutoModeRegionOffsetX);
+  }
+  if (config.AutoModeRegionOffsetY != config_.AutoModeRegionOffsetY || on_init_)
+  {
+    configureFeature("AutoModeRegionOffsetY", config.AutoModeRegionOffsetY, config.AutoModeRegionOffsetY);
+  }
+  if (config.AutoModeRegionSelector != config_.AutoModeRegionSelector || on_init_)
+  {
+    configureFeature("AutoModeRegionSelector", config.AutoModeRegionSelector, config.AutoModeRegionSelector);
+  }
+  /*
   if (config.exposure_auto_outliers != config_.exposure_auto_outliers || on_init_)
   {
     configureFeature("ExposureAutoOutliers", static_cast<VmbInt64_t>(config.exposure_auto_outliers),
@@ -975,6 +1010,7 @@ void AvtVimbaCamera::updateExposureConfig(Config& config)
     configureFeature("ExposureAutoTarget", static_cast<VmbInt64_t>(config.exposure_auto_target),
                      config.exposure_auto_target);
   }
+  */
 }
 
 /** Change the Gain configuration */
@@ -993,11 +1029,11 @@ void AvtVimbaCamera::updateGainConfig(Config& config)
   {
     configureFeature("GainAuto", config.gain_auto, config.gain_auto);
   }
-  if (config.gain_auto_adjust_tol != config_.gain_auto_adjust_tol || on_init_)
+  /*if (config.gain_auto_adjust_tol != config_.gain_auto_adjust_tol || on_init_)
   {
     configureFeature("GainAutoAdjustTol", static_cast<VmbInt64_t>(config.gain_auto_adjust_tol),
                      config.gain_auto_adjust_tol);
-  }
+  }*/
   if (config.gain_auto_max != config_.gain_auto_max || on_init_)
   {
     configureFeature("GainAutoMax", static_cast<float>(config.gain_auto_max), config.gain_auto_max);
@@ -1006,7 +1042,11 @@ void AvtVimbaCamera::updateGainConfig(Config& config)
   {
     configureFeature("GainAutoMin", static_cast<float>(config.gain_auto_min), config.gain_auto_min);
   }
-  if (config.gain_auto_outliers != config_.gain_auto_outliers || on_init_)
+  if (config.GainSelector != config_.GainSelector || on_init_)
+  {
+    configureFeature("GainSelector", config.GainSelector, config.GainSelector);
+  }
+  /*if (config.gain_auto_outliers != config_.gain_auto_outliers || on_init_)
   {
     configureFeature("GainAutoOutliers", static_cast<VmbInt64_t>(config.gain_auto_outliers), config.gain_auto_outliers);
   }
@@ -1017,7 +1057,7 @@ void AvtVimbaCamera::updateGainConfig(Config& config)
   if (config.gain_auto_target != config_.gain_auto_target || on_init_)
   {
     configureFeature("GainAutoTarget", static_cast<VmbInt64_t>(config.gain_auto_target), config.gain_auto_target);
-  }
+  }*/
 }
 
 /** Change the White Balance configuration */
@@ -1027,15 +1067,22 @@ void AvtVimbaCamera::updateWhiteBalanceConfig(Config& config)
   {
     ROS_INFO("Updating White Balance config:");
   }
-
-  if (config.balance_ratio_abs != config_.balance_ratio_abs || on_init_)
+  if (config.balance_ratio_selector_red != config_.balance_ratio_selector_red || on_init_)
   {
-    configureFeature("BalanceRatio", static_cast<float>(config.balance_ratio_abs), config.balance_ratio_abs);
+    configureFeature("BalanceRatioSelector", config.balance_ratio_selector_red, config.balance_ratio_selector_red);
   }
-  if (config.balance_ratio_selector != config_.balance_ratio_selector || on_init_)
+  if (config.balance_ratio_red != config_.balance_ratio_red || on_init_)
   {
-    configureFeature("BalanceRatioSelector", config.balance_ratio_selector, config.balance_ratio_selector);
+    configureFeature("BalanceRatio", static_cast<float>(config.balance_ratio_red), config.balance_ratio_red);
+  }  
+  if (config.balance_ratio_selector_blue != config_.balance_ratio_selector_blue || on_init_)
+  {
+    configureFeature("BalanceRatioSelector", config.balance_ratio_selector_blue, config.balance_ratio_selector_blue);
   }
+  if (config.balance_ratio_blue != config_.balance_ratio_blue || on_init_)
+  {
+    configureFeature("BalanceRatio", static_cast<float>(config.balance_ratio_blue), config.balance_ratio_blue);
+  }  
   if (config.whitebalance_auto != config_.whitebalance_auto || on_init_)
   {
     configureFeature("BalanceWhiteAuto", config.whitebalance_auto, config.whitebalance_auto);
@@ -1060,11 +1107,11 @@ void AvtVimbaCamera::updatePtpModeConfig(Config& config)
     ROS_INFO("Updating PTP config:");
   }
 
-  if (config.ptp_mode != config_.ptp_mode || on_init_)
+  /*if (config.ptp_mode != config_.ptp_mode || on_init_)
   {
     // configureFeature("PtpMode", config.ptp_mode, config.ptp_mode);
     configureFeature("PtpMode", config.ptp_mode, config.ptp_mode);
-  }
+  }*/
 }
 
 /** Change the Binning and Decimation configuration */
@@ -1075,14 +1122,14 @@ void AvtVimbaCamera::updateImageModeConfig(Config& config)
     ROS_INFO("Updating Image Mode config:");
   }
 
-  if (config.decimation_x != config_.decimation_x || on_init_)
+  /*if (config.decimation_x != config_.decimation_x || on_init_)
   {
     configureFeature("DecimationHorizontal", static_cast<VmbInt64_t>(config.decimation_x), config.decimation_x);
   }
   if (config.decimation_y != config_.decimation_y || on_init_)
   {
     configureFeature("DecimationVertical", static_cast<VmbInt64_t>(config.decimation_y), config.decimation_y);
-  }
+  }*/
   if (config.binning_x != config_.binning_x || on_init_)
   {
     configureFeature("BinningHorizontal", static_cast<VmbInt64_t>(config.binning_x), config.binning_x);
@@ -1129,7 +1176,7 @@ void AvtVimbaCamera::updateBandwidthConfig(Config& config)
 
   if (config.stream_bytes_per_second != config_.stream_bytes_per_second || on_init_)
   {
-    configureFeature("StreamBytesPerSecond", static_cast<VmbInt64_t>(config.stream_bytes_per_second),
+    configureFeature("DeviceLinkThroughputLimit", static_cast<VmbInt64_t>(config.stream_bytes_per_second),
                      config.stream_bytes_per_second);
   }
 }
@@ -1146,6 +1193,10 @@ void AvtVimbaCamera::updatePixelFormatConfig(Config& config)
   {
     configureFeature("PixelFormat", config.pixel_format, config.pixel_format);
   }
+  if (config.SensorBitDepth != config_.SensorBitDepth || on_init_)
+  {
+    configureFeature("SensorBitDepth", config.SensorBitDepth, config.pixel_format);
+  }
 }
 
 /** Change the Gige GPIO configuration */
@@ -1155,7 +1206,7 @@ void AvtVimbaCamera::updateGPIOConfig(Config& config)
   {
     ROS_INFO("Updating GPIO config:");
   }
-  if (config.sync_in_selector != config_.sync_in_selector || on_init_)
+  /*if (config.sync_in_selector != config_.sync_in_selector || on_init_)
   {
     configureFeature("SyncInSelector", config.sync_in_selector, config.sync_in_selector);
   }
@@ -1170,7 +1221,7 @@ void AvtVimbaCamera::updateGPIOConfig(Config& config)
   if (config.sync_out_source != config_.sync_out_source || on_init_)
   {
     configureFeature("SyncOutSource", config.sync_out_source, config.sync_out_source);
-  }
+  }*/
 }
 
 /** Change the USB GPIO configuration */
