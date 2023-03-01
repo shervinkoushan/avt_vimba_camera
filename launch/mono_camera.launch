@@ -55,9 +55,9 @@
   <arg name="GainSelector" default="All"/>
 
   <!-- White Balance -->
-  <arg name="balance_ratio_red" default="1.79"/>
+  <arg name="balance_ratio_red" default="1.576172"/>
   <arg name="balance_ratio_selector_red" default="Red"/>
-  <arg name="balance_ratio_blue" default="1.85"/>
+  <arg name="balance_ratio_blue" default="2.687012"/>
   <arg name="balance_ratio_selector_blue" default="Blue"/>
   <arg name="whitebalance_auto" default="Off"/>
   <arg name="whitebalance_auto_tol" default="5"/>
